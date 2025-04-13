@@ -1,0 +1,49 @@
+module decision_tree_3class (
+    input [2:0] category,    // 0:Electronics, 1:Clothing, 2:Footwear, 3:Books, 4:Home Appliances
+    input [9:0] price,       // Actual price value
+    input [2:0] payment,     // 0:Credit Card, 1:Debit Card, 2:PayPal, 3:Amazon Pay, 4:Gift Card
+    input [3:0] quantity,    // Order quantity
+    input [3:0] location,    // 0:New York, 1:San Francisco, etc.
+    output reg [1:0] status  // 0:Cancelled, 1:Completed, 2:Pending
+);
+
+always @(*) begin
+    case(category)
+        3'd0: begin // Electronics
+            if (price > 300) begin
+                case(payment)
+                    2: status = 2'b01; // PayPal -> Completed
+                    0: status = 2'b10; // Credit Card -> Pending
+                    default: status = 2'b00; // Others -> Cancelled
+                endcase
+            end else begin
+                if ((quantity > 2) && (location == 0 || location == 1)) begin
+                    status = 2'b01; // Completed
+                end else if (quantity <= 1) begin
+                    status = 2'b00; // Cancelled
+                end else begin
+                    status = 2'b10; // Pending
+                end
+            end
+        end
+        3'd1: begin // Clothing
+            case(payment)
+                2: status = 2'b01; // PayPal -> Completed
+                3: status = 2'b10; // Amazon Pay -> Pending
+                default: status = 2'b00; // Others -> Cancelled
+            endcase
+        end
+        3'd4: begin // Home Appliances
+            if (price > 1000) begin
+                status = 2'b00; // Cancelled
+            end else begin
+                status = (payment == 4) ? 2'b10 : 2'b01; // Gift Card->Pending, else->Completed
+            end
+        end
+        default: begin // Footwear, Books, others
+            status = 2'b10; // Default to Pending
+        end
+    endcase
+end
+
+endmodule
